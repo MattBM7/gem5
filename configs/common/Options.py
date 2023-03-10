@@ -677,6 +677,20 @@ def addCommonOptions(parser):
         default=None,
         help="Override vendor string returned by CPUID instruction in X86.",
     )
+    parser.add_argument(
+        "--l1d_repl",
+        type=str,
+        default="LRURP",
+        choices=ObjectList.rp_list.get_names(),
+        help="replacement policy for l1",
+    )
+    parser.add_argument(
+        "--l2_repl",
+        type=str,
+        default="LRURP",
+        choices=ObjectList.rp_list.get_names(),
+        help="replacement policy for l2",
+    )
 
 
 def addSEOptions(parser):
