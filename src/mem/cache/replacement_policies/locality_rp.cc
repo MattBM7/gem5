@@ -35,6 +35,8 @@
 #include "sim/cur_tick.hh"
 
 #include "mem/packet.hh"
+#include <queue>
+#include <cmath>
 
 namespace gem5
 {
@@ -67,8 +69,40 @@ LOCALITY::touch(const std::shared_ptr<ReplacementData>& replacement_data) const
 void
 LOCALITY::locality(const PacketPtr pkt) const
 {
-    printf("touch: 0x%lx\n", pkt->getAddr());
+    //printf("touch: 0x%lx\n", pkt->getAddr());
+    std::queue<unsigned long> access_queue;
+    access_queue.push(pkt->getAddr());
+    if(access_queue.size() >= 1000){
+	access_queue.pop();
+    }
+    get_locality(access_queue);
 }
+
+void
+LOCALITY::get_locality(std::queue<unsigned long> q) const
+{
+  int len = q.size();
+  // Get mean
+  std::queue<unsigned long> q_mean;
+  unsigned long long mean = 0;
+  while (!q_mean.empty())
+  {
+    mean += q_mean.front();
+    q_mean.pop();
+  }
+  mean /= len;
+  // Calculate variance
+  unsigned long long variance = 0;
+  while (!q.empty())
+  {
+    variance += std::pow(q.front() - mean, 2);
+    q.pop();
+  }
+  variance /= len;
+  variance = std::sqrt(variance);
+  printf("0x%llx\n", variance);
+}
+
 void
 LOCALITY::reset(const std::shared_ptr<ReplacementData>& replacement_data) const
 {
@@ -76,21 +110,7 @@ LOCALITY::reset(const std::shared_ptr<ReplacementData>& replacement_data) const
     std::static_pointer_cast<LOCALITYReplData>(
         replacement_data)->lastTouchTick = curTick();
 }
-// Right now I am just getting an average distance between cache elements
-// It makes more sense to look into how others measure locality and/or
-// implmenting a running locality count on a running count. Eg. the average
-// distance between the last 100 cache accesses.
-//
-// This file looks like a promising canidate to call a function that implments for the above solution:
-// src/mem/ruby/structures/CacheMemory.cc
-//void
-//LOCALITY::getLocality(const ReplacementCandidates& candidates) const
-//{
-//    for (const auto& candidate : candidates) {
-//	std::static_pointer_cast<LOCALITYReplData>(
-//            victim->replacementData;
-//    }
-//}
+
 
 ReplaceableEntry*
 LOCALITY::getVictim(const ReplacementCandidates& candidates) const

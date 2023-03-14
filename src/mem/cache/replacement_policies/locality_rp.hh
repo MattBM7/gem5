@@ -35,6 +35,7 @@
 #ifndef __MEM_CACHE_REPLACEMENT_POLICIES_LOCALITY_RP_HH__
 #define __MEM_CACHE_REPLACEMENT_POLICIES_LOCALITY_RP_HH__
 
+#include <queue>
 #include "mem/cache/replacement_policies/base.hh"
 namespace gem5
 {
@@ -86,6 +87,7 @@ class LOCALITY : public Base
     void touch(const std::shared_ptr<ReplacementData>& replacement_data) const
                                                                      override;
 
+    void get_locality(std::queue<unsigned long>)const;
     void locality(const PacketPtr pkt) const override;
     /**
      * Reset replacement data. Used when an entry is inserted.
