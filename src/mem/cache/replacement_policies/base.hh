@@ -73,13 +73,23 @@ class Base : public SimObject
      * @param replacement_data Replacement data to be touched.
      * @param pkt Packet that generated this access.
      */
+    //virtual void touch(const std::shared_ptr<ReplacementData>&
+    //    replacement_data, const PacketPtr pkt) const = 0;
+
     virtual void touch(const std::shared_ptr<ReplacementData>&
         replacement_data, const PacketPtr pkt)
     {
         touch(replacement_data);
+	locality(pkt);
     }
     virtual void touch(const std::shared_ptr<ReplacementData>&
         replacement_data) const = 0;
+
+    virtual void locality(const PacketPtr pkt) const
+    {
+	//do nothing
+	(void)0;
+    }
 
     /**
      * Reset replacement data. Used when it's holder is inserted/validated.

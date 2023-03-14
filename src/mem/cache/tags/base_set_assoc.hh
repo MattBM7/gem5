@@ -147,6 +147,7 @@ class BaseSetAssoc : public BaseTags
 
             // Update replacement data of accessed block
             replacementPolicy->touch(blk->replacementData, pkt);
+	    //printf("BGG: accessBlock: 0x%lx\n", pkt->getAddr());
         }
 
         // The tag lookup latency is the same for a hit or a miss

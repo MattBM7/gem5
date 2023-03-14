@@ -34,6 +34,8 @@
 #include "params/LOCALITYRP.hh"
 #include "sim/cur_tick.hh"
 
+#include "mem/packet.hh"
+
 namespace gem5
 {
 
@@ -63,12 +65,32 @@ LOCALITY::touch(const std::shared_ptr<ReplacementData>& replacement_data) const
 }
 
 void
+LOCALITY::locality(const PacketPtr pkt) const
+{
+    printf("touch: 0x%lx\n", pkt->getAddr());
+}
+void
 LOCALITY::reset(const std::shared_ptr<ReplacementData>& replacement_data) const
 {
     // Set last touch timestamp
     std::static_pointer_cast<LOCALITYReplData>(
         replacement_data)->lastTouchTick = curTick();
 }
+// Right now I am just getting an average distance between cache elements
+// It makes more sense to look into how others measure locality and/or
+// implmenting a running locality count on a running count. Eg. the average
+// distance between the last 100 cache accesses.
+//
+// This file looks like a promising canidate to call a function that implments for the above solution:
+// src/mem/ruby/structures/CacheMemory.cc
+//void
+//LOCALITY::getLocality(const ReplacementCandidates& candidates) const
+//{
+//    for (const auto& candidate : candidates) {
+//	std::static_pointer_cast<LOCALITYReplData>(
+//            victim->replacementData;
+//    }
+//}
 
 ReplaceableEntry*
 LOCALITY::getVictim(const ReplacementCandidates& candidates) const

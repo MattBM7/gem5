@@ -333,6 +333,7 @@ CacheMemory::cacheProbe(Addr address) const
         candidates.push_back(static_cast<ReplaceableEntry*>(
                                                        m_cache[cacheSet][i]));
     }
+    printf("CacheMemory::cacheProbe 0x%lx\n", address);
     return m_cache[cacheSet][m_replacementPolicy_ptr->
                         getVictim(candidates)->getWay()]->m_Address;
 }
