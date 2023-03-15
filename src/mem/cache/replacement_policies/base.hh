@@ -101,6 +101,7 @@ class Base : public SimObject
         replacement_data, const PacketPtr pkt)
     {
         reset(replacement_data);
+	locality(pkt);
     }
     virtual void reset(const std::shared_ptr<ReplacementData>&
         replacement_data) const = 0;
