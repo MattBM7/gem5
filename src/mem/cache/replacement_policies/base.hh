@@ -85,7 +85,7 @@ class Base : public SimObject
     virtual void touch(const std::shared_ptr<ReplacementData>&
         replacement_data) const = 0;
 
-    virtual void locality(const PacketPtr pkt) const
+    virtual void locality(const PacketPtr pkt)
     {
 	//do nothing
 	(void)0;

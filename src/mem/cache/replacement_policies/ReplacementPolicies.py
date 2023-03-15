@@ -181,3 +181,10 @@ class LOCALITYRP(BaseReplacementPolicy):
     type = "LOCALITYRP"
     cxx_class = "gem5::replacement_policy::LOCALITY"
     cxx_header = "mem/cache/replacement_policies/locality_rp.hh"
+    num_bits = Param.Int(2, "Number of bits per RRPV")
+    hit_priority = Param.Bool(
+        False, "Prioritize evicting blocks that havent had a hit recently"
+    )
+    btp = Param.Percent(
+        3, "Percentage of blocks to be inserted with long RRPV"
+    )

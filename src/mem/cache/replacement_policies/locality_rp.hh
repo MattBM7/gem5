@@ -37,6 +37,8 @@
 
 #include <queue>
 #include "mem/cache/replacement_policies/base.hh"
+#include "base/sat_counter.hh"
+
 namespace gem5
 {
 
@@ -50,19 +52,64 @@ class LOCALITY : public Base
 {
   protected:
     /** LRU-specific implementation of replacement data. */
-    struct LOCALITYReplData : ReplacementData
+    struct LRUReplData : ReplacementData
     {
         /** Tick on which the entry was last touched. */
         Tick lastTouchTick;
 
-        /** last addresss of block */
-        int *prevBlock;
+        /**
+         * Default constructor. Invalidate data.
+         */
+        LRUReplData() : lastTouchTick(0) {}
+    };
+
+    /** BRRIP-specific implementation of replacement data. */
+    struct BRRIPReplData : ReplacementData
+    {
+        /**
+         * Re-Reference Interval Prediction Value.
+         * Some values have specific names (according to the paper):
+         * 0 -> near-immediate re-rereference interval
+         * max_RRPV-1 -> long re-rereference interval
+         * max_RRPV -> distant re-rereference interval
+         */
+        SatCounter8 rrpv;
+
+        /** Whether the entry is valid. */
+        bool valid;
 
         /**
          * Default constructor. Invalidate data.
          */
-        LOCALITYReplData() : lastTouchTick(0), prevBlock(NULL) {}
+        BRRIPReplData(const int num_bits)
+            : rrpv(num_bits), valid(false)
+        {
+        }
     };
+
+    /**
+     * Number of RRPV bits. An entry that saturates its RRPV has the longest
+     * possible re-reference interval, that is, it is likely not to be used
+     * in the near future, and is among the best eviction candidates.
+     * A maximum RRPV of 1 implies in a NRU.
+     */
+    const unsigned numRRPVBits;
+
+    /**
+     * The hit priority (HP) policy replaces entries that do not receive cache
+     * hits over any cache entry that receives a hit, while the frequency
+     * priority (FP) policy replaces infrequently re-referenced entries.
+     */
+    const bool hitPriority;
+
+    /**
+     * Bimodal throtle parameter. Value in the range [0,100] used to decide
+     * if a new entry is inserted with long or distant re-reference.
+     */
+    const unsigned btp;
+
+    // replacement policy decision: 1 = LRU, 2 = BRRIP
+    int replacementPolicy;
 
   public:
     typedef LOCALITYRPParams Params;
@@ -87,8 +134,8 @@ class LOCALITY : public Base
     void touch(const std::shared_ptr<ReplacementData>& replacement_data) const
                                                                      override;
 
-    void get_locality(std::queue<unsigned long>)const;
-    void locality(const PacketPtr pkt) const override;
+    void get_locality(std::queue<unsigned long>);
+    void locality(const PacketPtr pkt) override;
     /**
      * Reset replacement data. Used when an entry is inserted.
      * Sets its last touch tick as the current tick.
